@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConsoleTestApp", "ConsoleTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTestApp", "ConsoleTestApp\ConsoleTestApp\ConsoleTestApp.csproj", "{BC4D62D9-D4FC-4D48-A5A2-D951BA9BE7DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClassLibrary", "ConsoleClassLibrary\ConsoleClassLibrary.csproj", "{E22C4657-CDDC-4E47-AF20-4ED50DED9B92}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleClassLibrary", "ConsoleTestApp\ConsoleClassLibrary\ConsoleClassLibrary.csproj", "{E22C4657-CDDC-4E47-AF20-4ED50DED9B92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

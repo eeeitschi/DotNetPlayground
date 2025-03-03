@@ -7,22 +7,12 @@ using Registration;
 using Registration.Api;
  
 var builder = WebApplication.CreateBuilder(args);
-var section = builder.Configuration.GetSection("RepositorySettings");
-var repositorySettings = section.Get<RepositorySettings>()
-    ?? throw new InvalidOperationException("RepositorySettings are not configured");
-var dataPath = repositorySettings.DataFolder
-    ?? throw new InvalidOperationException("RepositorySettings.DataFolder is not configured");
-if (!Directory.Exists(dataPath)) { Directory.CreateDirectory(dataPath); }
-builder.Services.AddSingleton<IJsonFileRepository>(_ => new JsonFileRepository(repositorySettings));
  
 builder.Services.AddValidatorsFromAssemblyContaining(typeof(CreateCampaignRequestValidator));
  
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
-    cfg.AddOpenBehavior(typeof(ValidationResultBehavior<,>));
-    cfg.RegisterServicesFromAssemblyContaining<CreateCampaign>();
-});
+builder.AddJsonFileRepository();
+builder.Services.AddMediatR();
+builder.Services.AddExceptionHandler();
  
 builder.Services.AddProblemDetails(options =>
 {
@@ -31,6 +21,7 @@ builder.Services.AddProblemDetails(options =>
         ctx.ProblemDetails.Extensions.Add("trace-id", ctx.HttpContext.TraceIdentifier);
     };
 });
+
 builder.Services.AddSingleton<ResultConverter>();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {

@@ -1,0 +1,28 @@
+@host = http://localhost:5033
+ 
+###
+POST {{host}}/campaigns
+Content-Type: application/json
+
+{
+  "name": "Demo",
+  "organizer": "Test Organizer",
+  "reservedRatioForGirls": 0.1,
+  "dates": [
+    {
+      "date": "2025-06-01",
+      "startTime": "10:00",
+      "endTime": "13:00",
+      "departmentAssignments": [
+        {
+          "departmentName": "Informatik",
+          "numberOfSeats": 10
+        },
+        {
+          "departmentName": "MT",
+          "numberOfSeats": 5
+        }
+      ]
+    }
+  ]
+}

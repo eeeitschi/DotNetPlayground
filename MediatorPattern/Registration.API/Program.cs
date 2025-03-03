@@ -1,7 +1,10 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using DataAccess;
+using FluentValidation;
 using MediatR;
 using Registration;
+using Registration.Api;
  
 var builder = WebApplication.CreateBuilder(args);
 var section = builder.Configuration.GetSection("RepositorySettings");
@@ -12,23 +15,53 @@ var dataPath = repositorySettings.DataFolder
 if (!Directory.Exists(dataPath)) { Directory.CreateDirectory(dataPath); }
 builder.Services.AddSingleton<IJsonFileRepository>(_ => new JsonFileRepository(repositorySettings));
  
+builder.Services.AddValidatorsFromAssemblyContaining(typeof(CreateCampaignRequestValidator));
+ 
 builder.Services.AddMediatR(cfg =>
 {
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+    cfg.AddOpenBehavior(typeof(ValidationResultBehavior<,>));
     cfg.RegisterServicesFromAssemblyContaining<CreateCampaign>();
+});
+ 
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = ctx =>
+    {
+        ctx.ProblemDetails.Extensions.Add("trace-id", ctx.HttpContext.TraceIdentifier);
+    };
+});
+builder.Services.AddSingleton<ResultConverter>();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 var app = builder.Build();
  
 app.MapGet("/ping", () => "pong");
  
-app.MapPost("/campaigns", async (CreateCampaignRequest request, IMediator sender) =>
+app.MapPost("/campaigns", async (CreateCampaignRequest request, IMediator mediator, ResultConverter converter) =>
 {
-    var result = await sender.Send(new CreateCampaign(request));
-    if (result.IsFailed)
-    {
-        return Results.BadRequest();
-    }
-    return Results.Ok(result.Value);
+    var result = await mediator.Send(new CreateCampaign(request));
+    return converter.ToResult(result);
+});
+ 
+app.MapPatch("/campaigns/{campaignId}", async (Guid campaignId, UpdateCampaignRequest request, IMediator mediator, ResultConverter converter) =>
+{
+    var result = await mediator.Send(new UpdateCampaign(campaignId, request));
+    return converter.ToResult(result);
+});
+ 
+app.MapPost("/campaigns/{campaignId}/activate", async (Guid campaignId, IMediator mediator, ResultConverter converter) =>
+{
+    var result = await mediator.Send(new ActivateCampaign(campaignId));
+    return converter.ToResult(result);
+});
+ 
+app.MapGet("/campaigns/{campaignId}", async (Guid campaignId, IMediator mediator, ResultConverter converter) =>
+{
+    var result = await mediator.Send(new GetCampaign(campaignId));
+    return converter.ToResult(result);
 });
  
 app.MapGet("campaigns/changes", async (HttpContext ctx, IMediator mediator, CancellationToken cancellationToken) =>

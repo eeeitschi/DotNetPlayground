@@ -7,12 +7,22 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
       <ProjectReference Include="..\Registration\Registration.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="users\achim\GitHub\DotNetPlayground\MediatorPattern\data\c718e7a68c8745dd88cbd3011234919e.json" />
+      <Content Remove="users\achim\GitHub\DotNetPlayground\MediatorPattern\data\9eaab6fb073c427b9026a082aed3d621.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="users\achim\GitHub\DotNetPlayground\MediatorPattern\data\" />
     </ItemGroup>
 
 </Project>

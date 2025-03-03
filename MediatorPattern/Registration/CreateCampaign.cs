@@ -1,5 +1,6 @@
 using DataAccess;
 using FluentResults;
+using FluentValidation;
 using MediatR;
  
 namespace Registration;
@@ -31,6 +32,49 @@ public record CreateCampaignResponse(
     // Many APIs return more data than just the ID. This decision has to be made
     // on a case-by-case basis.
 );
+ 
+ 
+public class CreateCampaignValidator : AbstractValidator<CreateCampaign>
+{
+    public CreateCampaignValidator()
+    {
+        RuleFor(x => x.Request).SetValidator(new CreateCampaignRequestValidator());
+    }
+}
+ 
+public class CreateCampaignRequestValidator : AbstractValidator<CreateCampaignRequest>
+{
+    public CreateCampaignRequestValidator()
+    {
+        RuleFor(x => x.Name).MustBeValidCampaignName();
+        RuleFor(x => x.Organizer).MustBeValidCampaignOrganizer();
+        RuleFor(x => x.ReservedRatioForGirls).MustBeValidReservedRatioForGirls();
+        RuleFor(x => x.PurgeDate).MustBeFuturePurgeDate();
+        RuleFor(x => x.PurgeDate).PurgeDateMustBeAfterAllDates(x => x.Dates?.Select(d => d.Date));
+        RuleFor(x => x.Dates).MustNotHaveDuplicateDates(x => x?.Select(d => d.Date));
+        RuleForEach(x => x.Dates).SetValidator(new CreateDateRequestValidator());
+    }
+}
+ 
+public class CreateDateRequestValidator : AbstractValidator<CreateDateRequest>
+{
+    public CreateDateRequestValidator()
+    {
+        RuleFor(x => x.Date).MustBeFutureDate();
+        RuleFor(x => x.StartTime).MustBeBefore(x => x.EndTime);
+        RuleForEach(x => x.DepartmentAssignments).SetValidator(new DepartmentAssignmentRequestValidator());
+    }
+}
+ 
+public class DepartmentAssignmentRequestValidator : AbstractValidator<DepartmentAssignmentRequest>
+{
+    public DepartmentAssignmentRequestValidator()
+    {
+        RuleFor(x => x.DepartmentName).MustBeValidDepartmentName();
+        RuleFor(x => x.NumberOfSeats).MustBeValidNumberOfSeats();
+        RuleFor(x => x.ReservedRatioForGirls).MustBeValidReservedRatioForGirls();
+    }
+}
  
 public class CreateCampaignHandler(IJsonFileRepository repository, IMediator mediator) : IRequestHandler<CreateCampaign, Result<CreateCampaignResponse>>
 {

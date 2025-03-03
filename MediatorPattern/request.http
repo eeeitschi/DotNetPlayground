@@ -1,7 +1,9 @@
 @host = http://localhost:5033
  
 ###
+# @name CreateCampaign
 POST {{host}}/campaigns
+Accept: application/json
 Content-Type: application/json
 
 {
@@ -26,3 +28,42 @@ Content-Type: application/json
     }
   ]
 }
+
+###
+GET {{host}}/campaigns
+
+###
+# @name GetCampaign
+GET {{host}}/campaigns/{{CreateCampaign.response.body.id}}
+Accept: application/json
+Content-Type: application/json
+
+###
+PATCH {{host}}/campaigns/{{GetCampaign.response.body.id}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Test Campaign",
+  "organizer": "Test Organizer 2",
+  "dates": [
+    {
+            "date": "2025-06-01",
+            "startTime": "10:00",
+            "endTime": "13:00",
+            "departmentAssignments": [
+                {
+                    "departmentName": "MT",
+                    "numberOfSeats": 10
+                }
+            ]
+        }
+  ],
+  "reservedRatioForGirls": null,
+  "purgeDate": null,
+  "status": "Inactive",
+  "updatedAt": "{{GetCampaign.response.body.updatedAt}}"
+}
+
+###
+POST {{host}}/campaigns/{{GetCampaign.response.body.id}}/activate
